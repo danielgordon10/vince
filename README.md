@@ -24,7 +24,7 @@ source video-env/bin/activate
 pip install -r requirements.txt
 ```
 
-## Downlaod R2V2
+## Downlaod Random Related Video Views (R2V2)
 1. To download via the command line,  run `python download_scripts/download_r2v2.py`.
 1. This may fail to download some of the files due to Google drive rate limiting, but you may still be able to download them via the web browser. You will have to manually download the links in [r2v2_drive_urls.txt](datasets/info_files/r2v2_drive_urls.txt).
 

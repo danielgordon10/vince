@@ -200,10 +200,10 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
         if self.freeze_feature_extractor:
             with torch.no_grad():
                 features = self.feature_extractor.extract_features(batch["data"])
-            extracted_features = features["extracted_features"].to(self.model.device, dtype=torch.float32).detach()
+                extracted_features = features["extracted_features"].to(self.model.device).detach()
         else:
             features = self.feature_extractor.extract_features(batch["data"])
-            extracted_features = features["extracted_features"].to(self.model.device, dtype=torch.float32)
+            extracted_features = features["extracted_features"].to(self.model.device)
 
         output = self.model(extracted_features)
 

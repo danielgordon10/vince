@@ -116,7 +116,7 @@ class VinceSolver(BaseSolver):
             imagenet_train_loader.set_dataset(
                 datasets.ImageFolder(
                     os.path.join(self.args.imagenet_data_path, "train"),
-                    transform=self.args.transform(self.input_size, "train", self.num_frames, stack=False),
+                    transform=self.args.transform(self.input_size, "train", 2 * self.num_frames, stack=False),
                 ),
                 batch_size=self.args.batch_size // self.num_frames,
                 shuffle=True,
@@ -131,7 +131,7 @@ class VinceSolver(BaseSolver):
             imagenet_val_loader.set_dataset(
                 datasets.ImageFolder(
                     os.path.join(self.args.imagenet_data_path, "val"),
-                    transform=self.args.transform(self.input_size, "val", self.num_frames, stack=False),
+                    transform=self.args.transform(self.input_size, "val", 2 * self.num_frames, stack=False),
                 ),
                 batch_size=self.args.batch_size // self.num_frames,
                 shuffle=True,
@@ -237,9 +237,7 @@ class VinceSolver(BaseSolver):
         if self.args.save or self.args.test_first:
             self.cifar_dataset = NPZDataset(
                 self.args,
-                os.path.join(
-                    os.path.dirname(__file__), os.pardir, os.pardir, "datasets", "cifar_data", "cifar_{data_subset}.npz"
-                ),
+                os.path.join(os.path.dirname(__file__), os.pardir, "datasets", "cifar_data", "cifar_{data_subset}.npz"),
                 "train",
                 10000,
             )
@@ -256,28 +254,12 @@ class VinceSolver(BaseSolver):
             if "initial_lr" not in param_group:
                 param_group["initial_lr"] = base_lr
         if self.use_apex:
-            self.model, optimizer = amp.initialize(self.model, optimizer, opt_level="O1")
-            opt = torch.optim.SGD(self.queue_model.parameters(), lr=0, momentum=0, weight_decay=0)
-            self.queue_model, opt = amp.initialize(self.queue_model, opt, opt_level="O1")
-            del opt
-
-        print("optimizer", optimizer)
-        self.optimizer = optimizer
-        start_lr = self.adjust_learning_rate()
-        if self.args.lr_decay_type == "cos":
-            print("Cosine learning rate schedule")
-            print("Start epoch", self.epoch, "End epoch", self.args.epochs)
-            print(
-                "Start LR",
-                start_lr,
-                "End LR",
-                start_lr * 0.5 * (1.0 + np.cos(np.pi * (self.args.epochs - 1) / self.args.epochs)),
+            (self.model, self.queue_model), optimizer = amp.initialize(
+                [self.model, self.queue_model], optimizer, opt_level="O1"
             )
-        else:
-            print("Step learning rate schedule")
-            print("Start epoch", self.epoch, "End epoch", self.args.epochs)
-            print("Steps", self.args.lr_step_schedule)
-            print("Start LR", start_lr, "End LR", start_lr * 0.1 ** len(self.args.lr_step_schedule))
+
+        self.optimizer = optimizer
+        self.print_optimizer()
 
     def setup_model(self):
         torch_devices = self.args.pytorch_gpu_ids
@@ -458,6 +440,7 @@ class VinceSolver(BaseSolver):
             assert torch.isfinite(loss)
         except AssertionError as re:
             import pdb
+
             traceback.print_exc()
             pdb.set_trace()
             print("anomoly", re)

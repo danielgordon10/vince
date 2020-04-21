@@ -18,7 +18,7 @@ python solver_runner.py \
   --transform MoCoV2ImagenetTransform \
   --num-workers 40 \
   --pytorch-gpu-ids 0 \
-  --feature-extractor-gpu-ids 1,2,3,4,5,6,7 \
+  --feature-extractor-gpu-ids 0,1,2,3,4,5,6,7 \
   --batch-size 256 \
   --base-lr 0.03 \
   --vince-embedding-size 128 \

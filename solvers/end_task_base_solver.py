@@ -5,7 +5,6 @@ import time
 import traceback
 from typing import Dict, List
 
-import numpy as np
 import torch
 import tqdm
 from dg_util.python_utils.average_meter import RollingAverageMeter, AverageMeter
@@ -96,31 +95,15 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
         for param_group in optimizer.param_groups:
             if "initial_lr" not in param_group:
                 param_group["initial_lr"] = base_lr
+
         if self.use_apex:
-            if not self.freeze_feature_extractor:
-                self.model, optimizer = amp.initialize(self.model, optimizer, opt_level="O1")
-            tmp_opt = torch.optim.SGD(self.feature_extractor.parameters(), lr=base_lr, weight_decay=0, momentum=0.9)
-            self.feature_extractor, tmp_opt = amp.initialize(self.feature_extractor, tmp_opt, opt_level="O1")
-            del tmp_opt
+            (self.feature_extractor, self.model), optimizer = amp.initialize(
+                [self.feature_extractor, self.model], optimizer, opt_level="O1", max_loss_scale=65536
+            )
 
         print("optimizer", optimizer)
         self.optimizer = optimizer
-
-        start_lr = self.adjust_learning_rate()
-        if self.args.lr_decay_type == "cos":
-            print("Cosine learning rate schedule")
-            print("Start epoch", self.epoch, "End epoch", self.args.epochs)
-            print(
-                "Start LR",
-                start_lr,
-                "End LR",
-                start_lr * 0.5 * (1.0 + np.cos(np.pi * (self.args.epochs - 1) / self.args.epochs)),
-            )
-        else:
-            print("Step learning rate schedule")
-            print("Start epoch", self.epoch, "End epoch", self.args.epochs)
-            print("Steps", self.args.lr_step_schedule)
-            print("Start LR", start_lr, "End LR", start_lr * 0.1 ** len(self.args.lr_step_schedule))
+        self.print_optimizer()
 
     @property
     def solver_model_name(self):
@@ -217,10 +200,12 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
         if self.freeze_feature_extractor:
             with torch.no_grad():
                 features = self.feature_extractor.extract_features(batch["data"])
-            output = self.model(features["extracted_features"].to(self.model.device).detach())
+            extracted_features = features["extracted_features"].to(self.model.device, dtype=torch.float32).detach()
         else:
             features = self.feature_extractor.extract_features(batch["data"])
-            output = self.model(features["extracted_features"].to(self.model.device))
+            extracted_features = features["extracted_features"].to(self.model.device, dtype=torch.float32)
+
+        output = self.model(extracted_features)
 
         output.update(features)
         output.update(batch)
@@ -260,6 +245,7 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
             assert torch.isfinite(loss)
         except AssertionError as re:
             import pdb
+
             traceback.print_exc()
             pdb.set_trace()
             print("anomoly", re)
@@ -274,7 +260,7 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
         t_start = time.time()
 
         self.optimizer.zero_grad()
-        if self.use_apex and not self.freeze_feature_extractor:
+        if self.use_apex:
             with amp.scale_loss(loss, self.optimizer) as scaled_loss:
                 scaled_loss.backward()
         else:
@@ -372,6 +358,7 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
                     assert torch.isfinite(loss)
                 except AssertionError:
                     import pdb
+
                     pdb.set_trace()
                     print("Loss is infinite")
 

@@ -83,6 +83,24 @@ class BaseSolver(abc.ABC):
     def setup_optimizer(self):
         raise NotImplementedError
 
+    def print_optimizer(self):
+        print("optimizer", self.optimizer)
+        start_lr = self.adjust_learning_rate()
+        if self.args.lr_decay_type == "cos":
+            print("Cosine learning rate schedule")
+            print("Start epoch", self.epoch, "End epoch", self.args.epochs)
+            print(
+                "Start LR",
+                start_lr,
+                "End LR",
+                start_lr * 0.5 * (1.0 + np.cos(np.pi * (self.args.epochs - 1) / self.args.epochs)),
+            )
+        else:
+            print("Step learning rate schedule")
+            print("Start epoch", self.epoch, "End epoch", self.args.epochs)
+            print("Steps", self.args.lr_step_schedule)
+            print("Start LR", start_lr, "End LR", start_lr * 0.1 ** len(self.args.lr_step_schedule))
+
     def adjust_learning_rate(self):
         """Decay the learning rate based on schedule"""
         out_base_lr = self.args.base_lr

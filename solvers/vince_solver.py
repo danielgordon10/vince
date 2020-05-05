@@ -47,6 +47,7 @@ class VinceSolver(BaseSolver):
         self.batch_count = 0
         self.batch_queue = Queue(2)
         self.prefetch_thread = None
+        self.kill_thread = False
         self.cifar_dataset: NPZDataset = None
         self.drawn_this_epoch = False
 
@@ -101,7 +102,7 @@ class VinceSolver(BaseSolver):
             self.train_data_names.append("R2V2")
 
             video_val_loader = PersistentDataLoader(
-                dataset=None, num_workers=min(self.args.num_workers, 40), pin_memory=False, device=device
+                dataset=None, num_workers=min(self.args.num_workers, 20), pin_memory=False, device=device
             )
             self.val_loaders.append(video_val_loader)
             self.val_batch_fns.append(self.process_video_data)
@@ -155,6 +156,7 @@ class VinceSolver(BaseSolver):
                 drop_last=True,
             )
             print("Loaded Video train", len(video_train_loader.dataset), "images", len(video_train_loader), "batches")
+
             # Use train transform to make it equally hard.
             video_val_loader.set_dataset(
                 self.args.dataset(
@@ -237,7 +239,9 @@ class VinceSolver(BaseSolver):
         if self.args.save or self.args.test_first:
             self.cifar_dataset = NPZDataset(
                 self.args,
-                os.path.join(os.path.dirname(__file__), os.pardir, "datasets", "cifar_data", "cifar_{data_subset}.npz"),
+                os.path.join(
+                    os.path.dirname(__file__), os.pardir, "datasets", "cifar_data", "cifar_{data_subset}.npz"
+                ),
                 "train",
                 10000,
             )
@@ -254,9 +258,8 @@ class VinceSolver(BaseSolver):
             if "initial_lr" not in param_group:
                 param_group["initial_lr"] = base_lr
         if self.use_apex:
-            (self.model, self.queue_model), optimizer = amp.initialize(
-                [self.model, self.queue_model], optimizer, opt_level="O1"
-            )
+            (self.model, self.queue_model), optimizer = amp.initialize([self.model, self.queue_model], optimizer,
+                                                                       opt_level="O1")
 
         self.optimizer = optimizer
         self.print_optimizer()
@@ -335,7 +338,7 @@ class VinceSolver(BaseSolver):
         self.drawn_this_epoch = False
 
     def prefetch_batches(self):
-        while True:
+        while not self.kill_thread:
             batches = []
             for ii in range(len(self.train_batch_fns)):
                 loader_id = self.batch_count % len(self.train_batch_fns)
@@ -369,6 +372,9 @@ class VinceSolver(BaseSolver):
     def start_prefetch(self):
         self.prefetch_thread = Thread(target=self.prefetch_batches)
         self.prefetch_thread.start()
+
+    def end(self):
+        self.kill_thread = True
 
     def get_batch(self):
         batches = self.batch_queue.get()
@@ -440,7 +446,6 @@ class VinceSolver(BaseSolver):
             assert torch.isfinite(loss)
         except AssertionError as re:
             import pdb
-
             traceback.print_exc()
             pdb.set_trace()
             print("anomoly", re)

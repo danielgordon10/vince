@@ -28,9 +28,8 @@ python solver_runner.py \
   --long-save-frequency 25 \
   --num-workers 4 \
   --log-frequency 10 \
-  --input-width 224 \
-  --input-height 224 \
   --base-lr 0.001 \
   --no-save \
   --description r18-b-256-q-65536-fsize-64-vid-ibc-4-no-self-unfrozen-backbone \
-  --debug
+  --debug \
+  --freeze-feature-extractor

@@ -26,6 +26,7 @@ def parse_args(**kwargs):
         "window_influence": 0.176,
         "response_sz": 17,
         "response_up": 16,
+        "positive_label_width": 5,
         "total_stride": 8,
         # train parameters
         "epoch_num": 50,
@@ -68,10 +69,11 @@ class EndTaskTrackingSolver(EndTaskBaseSolver):
         pass
 
     def convert_batch(self, batch, batch_type: str = "train") -> Dict:
-        exemplar_images, track_images = batch
+        exemplar_images, track_images, labels = batch
         batch = dict(
             data=exemplar_images,
             track_data=track_images,
+            labels=labels,
             data_source="GOT10k",
             batch_type=("images", len(track_images)),
         )
@@ -106,8 +108,9 @@ class EndTaskTrackingSolver(EndTaskBaseSolver):
             experiment = experiments.ExperimentOTB(os.path.join(self.args.data_path, "otb100"))  # , version=version)
             # experiment = experiments.ExperimentVOT(os.path.join(self.args.data_path, "vot"), version=version, read_image=False)
             # experiment = experiments.ExperimentGOT10k(self.args.data_path)
-            experiment.run(tracker, visualize=False)
             t_start = time.time()
+            experiment.run(tracker, visualize=False)
             t_end = time.time()
             tracker_names = os.listdir("results/OTB%s" % str(version))
+            experiment.report(tracker_names)
             print("time", t_end - t_start)

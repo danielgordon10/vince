@@ -67,7 +67,7 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
 
     @property
     def iterations_per_epoch(self):
-        return len(self.train_loader) + 1
+        return len(self.train_loader)
 
     def setup_model_param_groups(self) -> List[Dict]:
         raise NotImplementedError
@@ -97,9 +97,9 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
                 param_group["initial_lr"] = base_lr
 
         if self.use_apex:
-            (self.feature_extractor, self.model), optimizer = amp.initialize(
-                [self.feature_extractor, self.model], optimizer, opt_level="O1", max_loss_scale=65536
-            )
+            (self.feature_extractor, self.model), optimizer = amp.initialize([self.feature_extractor, self.model],
+                                                                             optimizer, opt_level="O1",
+                                                                             max_loss_scale=65536)
 
         print("optimizer", optimizer)
         self.optimizer = optimizer
@@ -245,7 +245,6 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
             assert torch.isfinite(loss)
         except AssertionError as re:
             import pdb
-
             traceback.print_exc()
             pdb.set_trace()
             print("anomoly", re)
@@ -358,7 +357,6 @@ class EndTaskBaseSolver(BaseSolver, abc.ABC):
                     assert torch.isfinite(loss)
                 except AssertionError:
                     import pdb
-
                     pdb.set_trace()
                     print("Loss is infinite")
 

@@ -1,9 +1,16 @@
+import random
 import time
 
 import cv2
 import numpy as np
+from dg_util.python_utils import pytorch_util as pt_util
 
 from datasets.base_dataset import BaseDataset
+
+
+def fliplr(x):
+    # Copy because needs to be contiguous with positive stride
+    return np.fliplr(x).copy()
 
 
 class PairDataset(BaseDataset):
@@ -47,31 +54,25 @@ class PairDataset(BaseDataset):
         x = cv2.imread(img_files[rand_x])[:, :, ::-1]
         # z = cv2.cvtColor(z, cv2.COLOR_BGR2RGB)
         # x = cv2.cvtColor(x, cv2.COLOR_BGR2RGB)
-
-        # print('box x', box_x, 'box z', box_z)
-
         item = (z, x, box_z, box_x)
-        t_end = time.time()
-        # if self.worker_id == 0:
-        # print('reading image time', t_end - t_start)
         if self.pair_transform is not None:
-            t_start = time.time()
             exemplar_img, track_img = self.pair_transform(item)
-            t_end = time.time()
-            # if self.worker_id == 0:
-            # print('first transform image time', t_end - t_start)
-            t_start = time.time()
-            # if t_end - t_start > 0.5:
-            # print('pair transform', (t_end - t_start))
-            # print('item', exemplar_img.shape, track_img.shape)
+            label = None
+            if isinstance(track_img, tuple):
+                track_img, label = track_img
             if self.transforms is not None:
+                if self.data_subset == 'train' and random.random() > 0.5:
+                    exemplar_img = np.fliplr(exemplar_img).copy()  # Need to copy to make contiguous
+                if self.data_subset == 'train' and random.random() > 0.5:
+                    track_img = np.fliplr(track_img).copy()
+                    if label is not None:
+                        label = np.fliplr(label).copy()
                 exemplar_img = self.transforms(exemplar_img)
                 track_img = self.transforms(track_img)
-            item = (exemplar_img, track_img)
-            t_end = time.time()
-            # if self.worker_id == 0:
-            # print('second transform image time', t_end - t_start)
-
+            if label is not None:
+                item = (exemplar_img, track_img, pt_util.from_numpy(label[np.newaxis, ...]))
+            else:
+                item = (exemplar_img, track_img)
         return item
 
     def __len__(self):

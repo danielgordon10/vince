@@ -83,6 +83,9 @@ class BaseSolver(abc.ABC):
     def setup_optimizer(self):
         raise NotImplementedError
 
+    def end(self):
+        pass
+
     def print_optimizer(self):
         print("optimizer", self.optimizer)
         start_lr = self.adjust_learning_rate()

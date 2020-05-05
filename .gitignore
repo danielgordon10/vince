@@ -17,3 +17,6 @@ Snapshots*
 __pycache__
 downloads
 pretrained_weights
+reports
+results
+

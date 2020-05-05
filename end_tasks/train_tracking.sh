@@ -27,8 +27,6 @@ python solver_runner.py \
   --long-save-frequency 25 \
   --num-workers 40 \
   --log-frequency 1 \
-  --input-width 224 \
-  --input-height 224 \
   --data-path /home/xkcd/datasets/got-10k-small/ \
   --base-lr 0.01 \
   --description r18-b-256-q-65536-fsize-64-vid-ibc-4-kinetics \

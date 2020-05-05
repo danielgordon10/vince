@@ -25,15 +25,15 @@ class BalancedLoss(nn.Module):
         self.neg_weight = neg_weight
 
     def forward(self, input, target):
-        pos_mask = target == 1
-        neg_mask = target == 0
+        pos_mask = target == 0
+        neg_mask = target == 1
         pos_num = pos_mask.sum().float()
         neg_num = neg_mask.sum().float()
-        weight = target.new_zeros(target.size())
+        weight = torch.zeros(target.size(), dtype=torch.float32, device=target.device)
         weight[pos_mask] = 1 / pos_num
         weight[neg_mask] = 1 / neg_num * self.neg_weight
         weight /= weight.sum()
-        return F.binary_cross_entropy_with_logits(input, target, weight, reduction="sum")
+        return F.binary_cross_entropy_with_logits(input, target.float(), weight, reduction="sum")
 
 
 class FocalLoss(nn.Module):

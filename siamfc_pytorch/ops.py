@@ -109,6 +109,7 @@ def crop_and_resize(
         img, center, size, out_size, border_type=cv2.BORDER_CONSTANT, border_value=(0, 0, 0), interp=cv2.INTER_LINEAR
 ):
     # convert box to corners (0-indexed)
+    size = max(2, size)
     xyxy = bb_util.xywh_to_xyxy([center[1], center[0], size, size])
     avg_color = np.mean(img, axis=(0, 1), dtype=float)
 

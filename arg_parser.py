@@ -70,7 +70,6 @@ def parse_args():
     # Dataset args
     parser.add_argument("--data-path", metavar="DIR", help="path to dataset")
     parser.add_argument("--dataset", help="Dataset to use for training/test.", type=dataset_class)
-    parser.add_argument("--no-multi-frame", dest="multi_frame", action="store_false")
     parser.add_argument("--transform", default="StandardVideoTransform", help="Transform to use", type=transform_class)
 
     # Architecture args
@@ -114,6 +113,8 @@ def parse_args():
         default=0.03,
         help="Temperature for NCE in vince for nearest neighbor discrimination",
     )
+    parser.add_argument("--no-multi-frame", dest="multi_frame", action="store_false",
+                        help="Use to disable taking different images from the same video.")
 
     # Training args
     parser.add_argument("--use-apex", action="store_true", help="Use Nvidia-Apex (automatic mixed precision).")
@@ -204,6 +205,8 @@ def parse_args():
     assert (
                not args.self_batch_comparison
            ) or args.inter_batch_comparison, "self-batch-comparison is only used when inter-batch-comparison is on."
+
+    assert args.multi_frame or args.num_frames == 1, "--no-multi-frame only really makes sense with num_frames == 1"
 
     args.tensorboard_dir = os.path.join(
         args.base_logdir, args.title, args.tensorboard_dir, constants.TIME_STR + "_" + args.description

@@ -9,7 +9,7 @@ from dg_util.python_utils import drawing
 from dg_util.python_utils import pytorch_util as pt_util
 
 from models.end_task_base_model import EndTaskBaseModel
-from siamfc_pytorch.losses import BalancedLoss
+from siamfc_pytorch import losses
 from utils.util_functions import to_uint8
 
 
@@ -18,9 +18,9 @@ class SiamFCTrackingModel(EndTaskBaseModel):
         super(SiamFCTrackingModel, self).__init__(args)
         self.out_scale = out_scale
         self.cfg = cfg
-        self.criterion = BalancedLoss()
+        # self.criterion = losses.BalancedLoss()
+        self.criterion = losses.FocalLoss()
 
-        self._labels = None
         self.search_patch_decoder = nn.Sequential(nn.Conv2d(input_channels, 256, 1))
         self.exemplar_decoder = nn.Sequential(nn.Conv2d(input_channels, 256, 1))
         self.upscale_sz = self.cfg["response_up"] * self.cfg["response_sz"]
@@ -52,46 +52,13 @@ class SiamFCTrackingModel(EndTaskBaseModel):
         out = out.view(nx, -1, out.size(-2), out.size(-1))
         return out
 
-    def _create_labels(self, size):
-        # skip if same sized labels already created
-        if self._labels is not None:
-            return self._labels[: size[0]]
-
-        def logistic_labels(x, y, r_pos, r_neg):
-            dist = np.abs(x) + np.abs(y)  # block distance
-            labels = np.where(
-                dist <= r_pos, np.ones_like(x), np.where(dist < r_neg, np.ones_like(x) * 0.5, np.zeros_like(x))
-            )
-            # labels = np.exp(-0.5 * np.sqrt(x ** 2 + y ** 2))
-            return labels
-
-        # distances along x- and y-axis
-        n, c, h, w = size
-        x = np.arange(w) - (w - 1) / 2
-        y = np.arange(h) - (h - 1) / 2
-        x, y = np.meshgrid(x, y)
-
-        # create logistic labels
-        r_pos = self.cfg["r_pos"] / self.cfg["total_stride"]
-        r_neg = self.cfg["r_neg"] / self.cfg["total_stride"]
-        labels = logistic_labels(x, y, r_pos, r_neg)
-
-        # repeat to size
-        labels = labels.reshape((1, 1, h, w))
-        labels = np.tile(labels, (n, c, 1, 1))
-
-        # convert to tensors
-        self._labels = torch.from_numpy(labels).to(self.device).float()
-
-        return self._labels
-
     def loss(self, network_outputs=None):
         if network_outputs is None:
             return {"siam_tracking_loss": None}
         # calculate loss
         responses = network_outputs["responses"]
-        labels = self._create_labels(responses.size())
-        loss = self.criterion(responses, labels)
+        labels = network_outputs['labels']
+        loss = self.criterion(responses, labels.float())
         # loss = F.binary_cross_entropy_with_logits(responses, labels)
         return {"siam_tracking_loss": (1.0, loss)}
 
@@ -101,9 +68,9 @@ class SiamFCTrackingModel(EndTaskBaseModel):
                 return {"dist": None, "center_dist": None, "mean_iou": None}
             metrics = {}
             responses = network_outputs["responses"]
-            labels = self._create_labels(responses.size())
+            labels = network_outputs['labels']
             responses_sigm = torch.sigmoid(responses)
-            dist = torch.abs(responses_sigm - labels)
+            dist = torch.abs(responses_sigm - labels.float())
             metrics["dist"] = dist.mean()
 
             pred_boxes = self.prediction_to_box(responses)
@@ -138,17 +105,20 @@ class SiamFCTrackingModel(EndTaskBaseModel):
         image_output = {}
         exemplar_images = to_uint8(network_outputs["data"])
         track_images = to_uint8(network_outputs["track_data"])
-        responses = pt_util.to_numpy(network_outputs["responses"].squeeze(1))
-        labels = pt_util.to_numpy(self._create_labels(responses.shape))
+        responses = pt_util.to_numpy(network_outputs["responses"].squeeze(1)).copy()
+        responses -= responses.min(axis=(1, 2), keepdims=True)
+        responses /= responses.max(axis=(1, 2), keepdims=True)
+        labels = pt_util.to_numpy(network_outputs['labels'].squeeze(1).float())
+        responses += labels / 10
         batch_size, _, im_height, im_width = network_outputs["track_data"].shape
 
         images = []
-        for exemplar_image, track_image, response, label in zip(exemplar_images, track_images, responses, labels):
-            images.extend([exemplar_image, track_image, response, label])
-            if len(images) > ((4 * 2) ** 2):
+        for exemplar_image, track_image, response in zip(exemplar_images, track_images, responses):
+            images.extend([exemplar_image, track_image, response])
+            if len(images) > ((3 * 2) ** 2):
                 break
 
-        subplot = drawing.subplot(images, 4 * 2, 4 * 2, im_width, im_height)
+        subplot = drawing.subplot(images, 3 * 2, 3 * 2, im_width, im_height)
         image_output["images/tracks"] = subplot
 
         return image_output

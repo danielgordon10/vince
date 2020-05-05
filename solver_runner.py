@@ -45,7 +45,7 @@ def main():
             print("Running Val")
             solver.run_val()
             solver.epoch += 1
-
+        solver.end()
     except:
         traceback.print_exc()
     finally:

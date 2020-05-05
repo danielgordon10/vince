@@ -74,7 +74,7 @@ class TrackerSiamFC(Tracker):
             cv2.imshow("template", z[:, :, ::-1])
             cv2.waitKey(1)
         z = self.image_to_torch(z)
-        self.kernel = self.net.extract_features(z)
+        self.kernel = self.net.feature_extractor(z)
 
     def make_mean_and_std(self, inputs):
         _, mean = pt_util.fix_broadcast(inputs, self.mean)
@@ -130,7 +130,7 @@ class TrackerSiamFC(Tracker):
         x = self.image_to_torch(x)
 
         # responses
-        x = self.net.extract_features(x)
+        x = self.net.feature_extractor(x)
         responses = self.net.head(self.kernel, x)
         # responses = torch.sigmoid(responses)
         # responses = responses.squeeze(1).cpu().numpy()

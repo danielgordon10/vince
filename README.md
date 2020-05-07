@@ -64,7 +64,7 @@ Here is a basic workflow for downloading many YouTube videos.
 ### Train baselines
 1. The official MoCo baseline is available at https://github.com/facebookresearch/moco, but for our work, we wrote our own version.
 1. We have provided an example [train script](vince/train_moco_baseline.sh) to train this model.
-1. We additionally include MoCoV2 baseline scripts for ResNet50 at [vince/train_moco_v2.sh](vince/train_moco_v2.sh). Pretrained weights and results are currently not provided.
+1. We additionally include MoCoV2 baseline scripts for ResNet50 at [vince/train_moco_v2.sh](vince/train_moco_v2.sh).
 1. We additionally include the Jigsaw method from [PIRL](https://arxiv.org/abs/1912.01991) and an accompanying script [vince/train_vince_jigsaw.sh](vince/train_vince_jigsaw.sh). Pretrained weights and results are currently not provided.
 
 ### Train End Task
@@ -81,10 +81,32 @@ Here is a basic workflow for downloading many YouTube videos.
 1. If more evaluation is needed, it can be added by implementing `run_eval` for that solver. For an example, see [solvers/end_task_tracking_solver.py](solvers/end_task_tracking_solver.py) and [end_tasks/eval_tracking.sh](end_tasks/eval_tracking.sh).
 
 ### Download Pretrained Weights
-Pretrained weights are available for VINCE as well as all baselines mentioned in the paper. All models are trained on a ResNet18 backbone.
+Pretrained weights are available for VINCE as well as all baselines mentioned in the paper. 
+We provide the pretrained weights for the backbone only, not for any end task.
 
-To download the weights, from the root directory, run `sh download_scripts/download_pretrained_weights.sh`
-Alternatively, download them directly from https://drive.google.com/uc?id=11TAz8w9xts7Tsqgn0UPVo617gqz5N_xL
+#### ResNet18
+To download the weights, from the root directory, run `sh download_scripts/download_pretrained_weights_resnet18.sh`
+Alternatively, download them directly from https://drive.google.com/uc?id=1QYuUgdNkhOIdy3hle79uWaJER4Z7SIlD
+
+#### ResNet50
+These models were trained using the hyperparameters in https://arxiv.org/abs/2003.04297 except for batch size which was 896 (starting loss was scaled proportionally to 0.105).
+To download the weights, from the root directory, run `sh download_scripts/download_pretrained_weights_resnet50.sh`
+Alternatively, download them directly from https://drive.google.com/uc?id=1c6wUtYZuCI_NAEhwtzB3j5F8yH8TNkZo
+
+#### Benchmark Results
+The results you achieve should somewhat match the table below, though different learning schedules and other factors may slightly change performance.
+
+| Method Name (In Paper) | Dir Name                          | Backbone | ImageNet | Sun Scenes | Kinetics 400 | OTB 2015 Precision | OTB 2015 Success |
+|------------------------|-----------------------------------|:--------:|:--------:|:----------:|:------------:|--------------------|:----------------:|
+| Sup-IN                 | N/A                               | ResNet18 |    0.696 |      0.491 |        0.207 |              0.557 |            0.396 |
+| MoCo-IN                | moco-in                           | ResNet18 |    0.447 |      0.487 |        0.336 |              0.583 |            0.429 |
+| MoCo-G                 | moco-g                            | ResNet18 |    0.393 |      0.444 |        0.313 |              0.511 |            0.413 |
+| MoCo-R2V2              | moco-r2v2                         | ResNet18 |    0.358 |      0.450 |        0.318 |              0.555 |            0.403 |
+| VINCE                  | vince-r2v2-multi-frame-multi-pair | ResNet18 |    0.400 |      0.495 |        0.362 |              0.622 |            0.465 |
+| Sup-IN                 | N/A                               | ResNet50 |    0.762 |      0.593 |        0.305 |              0.458 |            0.320 |
+| MoCo-V2-IN             | moco-v2-in                        | ResNet50 |    0.652 |      0.608 |        0.459 |              0.300 |            0.260 |
+| MoCo-R2V2              | moco-v2-r2v2                      | ResNet50 |    0.536 |      0.581 |        0.456 |              0.386 |            0.299 |
+| VINCE                  | vince-r2v2-multi-frame-multi-pair | ResNet50 |    0.544 |      0.611 |        0.491 |              0.402 |            0.300 |
 
 ## Citation
 ```
@@ -97,4 +119,3 @@ Alternatively, download them directly from https://drive.google.com/uc?id=11TAz8
     primaryClass={cs.CV}
 }
 ```
-

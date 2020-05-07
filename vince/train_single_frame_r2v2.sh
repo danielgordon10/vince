@@ -39,4 +39,4 @@ python solver_runner.py \
   --num-frames 1 \
   --imagenet-data-path /usr/lusers/xkcd/datasets/imagenet \
   --data-path /gscratch/scrubbed/xkcd/datasets/r2v2_large_with_ids/ \
-  --no-multi-frame \
+  --no-multi-frame

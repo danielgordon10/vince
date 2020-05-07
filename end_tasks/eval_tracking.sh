@@ -19,8 +19,6 @@ python run_end_task_eval.py \
   --pytorch-gpu-ids 0 \
   --feature-extractor-gpu-ids 0 \
   --backbone ResNet18SiamFCDilated \
-  --input-width 224 \
-  --input-height 224 \
   --no-save \
   --disable-dataloader \
   --freeze-feature-extractor

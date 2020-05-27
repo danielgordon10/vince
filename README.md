@@ -25,6 +25,11 @@ pip install -r requirements.txt
 ```
 
 ## Downlaod Random Related Video Views (R2V2)
+The dataset released is larger than the one presented in the paper. Each image denotes its source video and frame number in its file name. For example `aa3jheRwEYo_000725.jpg` corresponds to video `https://www.youtube.com/watch?v=aa3jheRwEYo` frame `725`.
+
+To download one large file containing all the train and val images, download https://drive.google.com/open?id=1JGwb6ai1NugeW7KJDDE7G_bZ54D69teF
+
+Alternatively:
 1. To download via the command line,  run `python download_scripts/download_r2v2.py`.
 1. This may fail to download some of the files due to Google drive rate limiting, but you may still be able to download them via the web browser. You will have to manually download the links in [r2v2_drive_urls.txt](datasets/info_files/r2v2_drive_urls.txt).
 

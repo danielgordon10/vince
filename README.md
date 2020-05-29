@@ -107,7 +107,7 @@ The results you achieve should somewhat match the table below, though different 
 | MoCo-IN                | moco-in                           | ResNet18 |    0.447 |      0.487 |        0.336 |              0.583 |            0.429 |
 | MoCo-G                 | moco-g                            | ResNet18 |    0.393 |      0.444 |        0.313 |              0.511 |            0.413 |
 | MoCo-R2V2              | moco-r2v2                         | ResNet18 |    0.358 |      0.450 |        0.318 |              0.555 |            0.403 |
-| VINCE                  | vince-r2v2-multi-frame-multi-pair | ResNet18 |    0.400 |      0.495 |        0.362 |              0.622 |            0.465 |
+| VINCE                  | vince-r2v2-multi-frame-multi-pair | ResNet18 |    0.400 |      0.495 |        0.362 |              0.629 |            0.465 |
 | Sup-IN                 | N/A                               | ResNet50 |    0.762 |      0.593 |        0.305 |              0.458 |            0.320 |
 | MoCo-V2-IN             | moco-v2-in                        | ResNet50 |    0.652 |      0.608 |        0.459 |              0.300 |            0.260 |
 | MoCo-R2V2              | moco-v2-r2v2                      | ResNet50 |    0.536 |      0.581 |        0.456 |              0.386 |            0.299 |

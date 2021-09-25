@@ -1,8 +1,8 @@
 # Video Noise Contrastive Estimation (VINCE)
 This is a repository containing code used to implement the models in the paper  
-[Watching the World Go By: Representation Learning from Unlabeled Videos](https://homes.cs.washington.edu/~xkcd/pdfs/vince.pdf) (https://arxiv.org/abs/2003.07990).
+[Watching the World Go By: Representation Learning from Unlabeled Videos](https://danielgordon10.github.io/pdfs/vince.pdf) (https://arxiv.org/abs/2003.07990).
 
-<img src="https://homes.cs.washington.edu/~xkcd/images/projects/vince.jpg" height="500"/>
+<img src="https://danielgordon10.github.io/images/projects/vince.jpg" height="500"/>
 
 ## Environment Setup
 We recommend using `Anaconda` to manage your environment setup and run our code. 

@@ -1,11 +1,11 @@
 # Video Noise Contrastive Estimation (VINCE)
-This is a repository containing code used to implement the models in the paper  
+This is a repository containing code used to implement the models in the paper
 [Watching the World Go By: Representation Learning from Unlabeled Videos](https://danielgordon10.github.io/pdfs/vince.pdf) (https://arxiv.org/abs/2003.07990).
 
 <img src="https://danielgordon10.github.io/images/projects/vince.jpg" height="500"/>
 
 ## Environment Setup
-We recommend using `Anaconda` to manage your environment setup and run our code. 
+We recommend using `Anaconda` to manage your environment setup and run our code.
 The following commands will create an environment similar to ours with minimal requirements.
 ### Conda
 ```bash
@@ -13,7 +13,7 @@ conda create -n video-env python=3.6.8
 conda deactivate
 conda env update -n video-env -f env.yml
 conda activate video-env
-pip install git+https://github.com/danielgordon10/dg_util.git -U
+pip install git+https://github.com/danielgordon10/dg_util.git -Uq
 ```
 
 ### Virtualenv
@@ -25,39 +25,41 @@ pip install -r requirements.txt
 ```
 
 ## Downlaod Random Related Video Views (R2V2)
-The dataset released is larger than the one presented in the paper. Each image denotes its source video and frame number in its file name. For example `aa3jheRwEYo_000725.jpg` corresponds to video `https://www.youtube.com/watch?v=aa3jheRwEYo` frame `725`.
+Due to budgetary constraints, I can no longer directly host the dataset, however I have made available a script to
+recreate the dataset. Note however that many of the original videos have since been deleted from youtube, so their data
+cannot be recreated.
 
-To download one large file containing all the train and val images, download https://drive.google.com/open?id=1JGwb6ai1NugeW7KJDDE7G_bZ54D69teF
-
-Alternatively:
-1. To download via the command line,  run `python download_scripts/download_r2v2.py`.
-1. This may fail to download some of the files due to Google drive rate limiting, but you may still be able to download them via the web browser. You will have to manually download the links in [r2v2_drive_urls.txt](datasets/info_files/r2v2_drive_urls.txt).
+### Recreate the dataset
+1. Ensure you have set up the conda environment and installed `dg_util.git` as noted in [Conda](#Conda)
+1. [Follow instructions to create cookies.txt](#create-cookies.txt)
+1. Run `python download_scripts/recreate_r2v2_dataset.py`
 
 ### Notes
+Original Dataset:
 |       | Size (GB) | Number of Files | Number of Images | Number of Folders | Number of Source Videos |
 |-------|:---------:|:---------------:|:----------------:|:-----------------:|:-----------------------:|
 | Train |       110 |       2,788,424 |        2,784,328 |              4096 |                 696,082 |
 | Val   |       8.8 |         226,620 |          222,524 |              4096 |                  55,631 |
  - Some folders have many more images than others. This is expected.
- - The video and frame ids are also provided in [datasets/info_files/r2v2_ids_train.txt](datasets/info_files/r2v2_ids_train.txt) and [datasets/info_files/r2v2_ids_val.txt](datasets/info_files/r2v2_ids_val.txt)  
- 
+ - The video and frame ids are also provided in [datasets/info_files/r2v2_ids_train.txt](datasets/info_files/r2v2_ids_train.txt) and [datasets/info_files/r2v2_ids_val.txt](datasets/info_files/r2v2_ids_val.txt)
+
 ### Downloading your own set of YouTube videos
 If you would like to download a different set of YouTube videos, you may still find our code helpful.
 Here is a basic workflow for downloading many YouTube videos.
 
-1. [Create cookies.txt](#create-cookies.txt)
-1. Create a list of many YouTube URLs to download. 
+1. [Follow instructions to create cookies.txt](#create-cookies.txt)
+1. Create a list of many YouTube URLs to download.
     1. One option would be to use [youtube_scrape/search_youtube_for_urls.py](youtube_scrape/search_youtube_for_urls.py)
     1. Another would be YouTube-8m URLs (https://github.com/danielgordon10/youtube8m-data)
-1. Run `python run_cache_video_dataset.py --title cache --description caching --num-workers 100` after appropriately formatting the files.  
+1. Run `python run_cache_video_dataset.py --title cache --description caching --num-workers 100` after appropriately formatting the files.
     - Note - You can often use more workers than your CPU has threads because YouTube downloading tends to be the bottleneck.
 1. [youtube_scrape/download_kinetics.py](youtube_scrape/download_kinetics.py) is a convenient file for downloading Kinetics videos.
 
 
-### Create cookies.txt
-1. Install [this extension](https://chrome.google.com/webstore/detail/cookiestxt/njabckikapfpffapmjgojcnbfjonfjfg).
+## Create cookies.txt
+1. Follow instructions at https://apple.stackexchange.com/a/349759
 1. Go to any youtube video: https://www.youtube.com/watch?v=AKQE9RyOIMY
-1. Click the cookie icon and save the data into `youtube_scrape/cookies.txt` or adjust the `COOKIE_PATH` variable in [constants.py](constants.py)
+1. Click the extension icon and save the data into `youtube_scrape/cookies.txt`.
 
 
 ## Training
@@ -86,7 +88,7 @@ Here is a basic workflow for downloading many YouTube videos.
 1. If more evaluation is needed, it can be added by implementing `run_eval` for that solver. For an example, see [solvers/end_task_tracking_solver.py](solvers/end_task_tracking_solver.py) and [end_tasks/eval_tracking.sh](end_tasks/eval_tracking.sh).
 
 ### Download Pretrained Weights
-Pretrained weights are available for VINCE as well as all baselines mentioned in the paper. 
+Pretrained weights are available for VINCE as well as all baselines mentioned in the paper.
 We provide the pretrained weights for the backbone only, not for any end task.
 
 #### ResNet18

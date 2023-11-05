@@ -13,7 +13,7 @@ conda create -n video-env python=3.6.8
 conda deactivate
 conda env update -n video-env -f env.yml
 conda activate video-env
-pip install git+https://github.com/danielgordon10/dg_util.git -Uq
+pip install git+https://github.com/danielgordon10/dg_util.git -U
 ```
 
 ### Virtualenv
@@ -25,9 +25,9 @@ pip install -r requirements.txt
 ```
 
 ## Downlaod Random Related Video Views (R2V2)
-Due to budgetary constraints, I can no longer directly host the dataset, however I have made available a script to
+Due to budgetary constraints, I can no longer directly host the dataset directly, however I have made available a script to
 recreate the dataset. Note however that many of the original videos have since been deleted from youtube, so their data
-cannot be recreated.
+cannot be recreated. If you are interested in hosting the dataset for me, please contact me.
 
 ### Recreate the dataset
 1. Ensure you have set up the conda environment and installed `dg_util.git` as noted in [Conda](#Conda)

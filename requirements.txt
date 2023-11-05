@@ -18,5 +18,4 @@ torch==1.4.0
 torchvision==0.5.0
 tqdm==4.32.2
 yacs==0.1.6
-youtube-dl==2020.1.24
 git+https://github.com/danielgordon10/dg_util.git

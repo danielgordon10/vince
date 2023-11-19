@@ -93,12 +93,12 @@ We provide the pretrained weights for the backbone only, not for any end task.
 
 #### ResNet18
 To download the weights, from the root directory, run `sh download_scripts/download_pretrained_weights_resnet18.sh`
-Alternatively, download them directly from https://drive.google.com/uc?id=1QYuUgdNkhOIdy3hle79uWaJER4Z7SIlD
+Alternatively, download them directly from https://drive.google.com/uc?id=1L2SZvsvpxe-A1gCN9Nxg9LwB_d604aQf
 
 #### ResNet50
 These models were trained using the hyperparameters in https://arxiv.org/abs/2003.04297 except for batch size which was 896 (starting loss was scaled proportionally to 0.105).
 To download the weights, from the root directory, run `sh download_scripts/download_pretrained_weights_resnet50.sh`
-Alternatively, download them directly from https://drive.google.com/uc?id=1c6wUtYZuCI_NAEhwtzB3j5F8yH8TNkZ3
+Alternatively, download them directly from https://drive.google.com/uc?id=11TfKfZLLx2FYCATjkll5nUIOxSgSBWGi
 
 #### Benchmark Results
 The results you achieve should somewhat match the table below, though different learning schedules and other factors may slightly change performance.
